@@ -1,1 +1,1 @@
-# ee4204-socket-programming-lab
+# EE4204 Socket Programming Lab

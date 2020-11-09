@@ -57,7 +57,9 @@ int main(int argc, char *argv[])
 
     while (1)
     {
+        /*
         printf("waiting for data\n");
+        */
         sin_size = sizeof(struct sockaddr_in);
         con_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size); // accept the packet
         if (con_fd < 0)
@@ -101,7 +103,9 @@ void str_ser(int sockfd, double error_p, int data_len)
     gettimeofday(&seedt, NULL);
     srand(seedt.tv_usec * seedt.tv_sec);
 
+    /*
     printf("receiving data!\n");
+    */
 
     while (!end)
     {
@@ -147,5 +151,7 @@ void str_ser(int sockfd, double error_p, int data_len)
     }
     fwrite(buf, 1, lseek, fp); //write data into file
     fclose(fp);
+    /*
     printf("a file has been successfully received!\nthe total data received is %d bytes\n", (int)lseek);
+    */
 }

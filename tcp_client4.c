@@ -36,6 +36,7 @@ int main(int argc, char *argv[])
 
     data_len = atoi(argv[2]);
 
+    /*
     printf("canonical name: %s\n", sh->h_name); // print the remote host's information
     for (pptr = sh->h_aliases; *pptr != NULL; pptr++)
         printf("the aliases name is: %s\n", *pptr);
@@ -48,6 +49,7 @@ int main(int argc, char *argv[])
         printf("unknown addrtype\n");
         break;
     }
+    */
 
     addrs = (struct in_addr **)sh->h_addr_list;
     sockfd = socket(AF_INET, SOCK_STREAM, 0); // create the socket
@@ -76,7 +78,11 @@ int main(int argc, char *argv[])
 
     ti = str_cli(fp, sockfd, &len, data_len); // perform the transmission and receiving
     rt = (len / (float)ti);                   // caculate the average transmission rate
+    /*
     printf("Time(ms) : %.3f, Data sent(byte): %d\nData rate: %f (Kbytes/s)\n", ti, (int)len, rt);
+    */
+    printf(", %.3f\n", ti);
+    printf(", %f\n", rt);
 
     close(sockfd);
     fclose(fp);
@@ -100,8 +106,10 @@ float str_cli(FILE *fp, int sockfd, long *len, int data_len)
     fseek(fp, 0, SEEK_END);
     lsize = ftell(fp);
     rewind(fp);
+    /*
     printf("The file length is %d bytes\n", (int)lsize);
     printf("the packet length is %d bytes\n", data_len);
+    */
 
     // allocate memory to contain the whole file.
     buf = (char *)malloc(lsize);
@@ -136,7 +144,9 @@ float str_cli(FILE *fp, int sockfd, long *len, int data_len)
 
         if (ack.num != seq_num + 1 || ack.len != 0)
         {
+            /*
             printf("error in transmission\n");
+            */
         }
         else
         {

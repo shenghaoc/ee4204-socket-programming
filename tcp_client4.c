@@ -81,7 +81,8 @@ int main(int argc, char *argv[])
     /*
     printf("Time(ms) : %.3f, Data sent(byte): %d\nData rate: %f (Kbytes/s)\n", ti, (int)len, rt);
     */
-    printf("%d, %.3f\n", data_len, rt);
+    printf("%d, %.3f\n", data_len, ti);
+    printf("%d, %f\n", data_len, rt);
 
     close(sockfd);
     fclose(fp);

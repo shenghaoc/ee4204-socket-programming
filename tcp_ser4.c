@@ -6,7 +6,7 @@ tcp_ser.c: the source file of the server in tcp transmission
 
 #define BACKLOG 10
 
-void str_ser(int sockfd, double error_p); // transmitting and receiving function
+void str_ser(int, double, int); // transmitting and receiving function
 
 int main(int argc, char *argv[])
 {
@@ -15,15 +15,17 @@ int main(int argc, char *argv[])
 	struct sockaddr_in their_addr;
 	int sin_size;
 	double error_p;
+	int data_len;
 
 	pid_t pid;
 
-	if (argc != 2)
+	if (argc != 3)
 	{
 		printf("parameters not match");
 	}
 
 	error_p = atof(argv[1]);
+	data_len = atoi(argv[2]);
 
 	sockfd = socket(AF_INET, SOCK_STREAM, 0); //create socket
 	if (sockfd < 0)
@@ -64,7 +66,7 @@ int main(int argc, char *argv[])
 		if ((pid = fork()) == 0) // creat acception process
 		{
 			close(sockfd);
-			str_ser(con_fd, error_p); //receive packet and response
+			str_ser(con_fd, error_p, data_len); //receive packet and response
 			close(con_fd);
 			exit(0);
 		}
@@ -75,11 +77,11 @@ int main(int argc, char *argv[])
 	exit(0);
 }
 
-void str_ser(int sockfd, double error_p)
+void str_ser(int sockfd, double error_p, int data_len)
 {
 	char buf[BUFSIZE];
 	FILE *fp;
-	char recvs[DATALEN];
+	char recvs[data_len];
 	struct ack_so ack;
 	int seq_num = 0;
 	int end;
@@ -96,9 +98,9 @@ void str_ser(int sockfd, double error_p)
 
 	while (!end)
 	{
-        has_err = error_p > (double) rand() / RAND_MAX * 100;
+		has_err = error_p > (double)rand() / RAND_MAX * 100;
 
-		if ((n = recv(sockfd, &recvs, DATALEN, 0)) == -1) //receive the packet
+		if ((n = recv(sockfd, &recvs, data_len, 0)) == -1) //receive the packet
 		{
 			printf("error when receiving\n");
 			exit(1);
@@ -116,7 +118,9 @@ void str_ser(int sockfd, double error_p)
 				}
 				memcpy((buf + lseek), recvs, n);
 				lseek += n;
-			} else {
+			}
+			else
+			{
 				ack.num = 0;
 			}
 

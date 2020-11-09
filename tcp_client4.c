@@ -4,8 +4,8 @@ tcp_client.c: the source file of the client in tcp transmission
 
 #include "headsock.h"
 
-float str_cli(FILE *fp, int sockfd, long *len);		  //transmission function
-void tv_sub(struct timeval *out, struct timeval *in); //calcu the time interval between out and in
+float str_cli(FILE *, int, long *, int);		 //transmission function
+void tv_sub(struct timeval *, struct timeval *); //calcu the time interval between out and in
 
 int main(int argc, char *argv[])
 {
@@ -17,8 +17,9 @@ int main(int argc, char *argv[])
 	struct hostent *sh;
 	struct in_addr **addrs;
 	FILE *fp;
+	int data_len;
 
-	if (argc != 2)
+	if (argc != 3)
 	{
 		printf("parameters not match");
 	}
@@ -29,6 +30,8 @@ int main(int argc, char *argv[])
 		printf("error when gethostby name");
 		exit(0);
 	}
+
+	data_len = atoi(argv[2]);
 
 	printf("canonical name: %s\n", sh->h_name); //print the remote host's information
 	for (pptr = sh->h_aliases; *pptr != NULL; pptr++)
@@ -68,7 +71,7 @@ int main(int argc, char *argv[])
 		exit(0);
 	}
 
-	ti = str_cli(fp, sockfd, &len); //perform the transmission and receiving
+	ti = str_cli(fp, sockfd, &len, data_len); //perform the transmission and receiving
 	rt = (len / (float)ti);			//caculate the average transmission rate
 	printf("Time(ms) : %.3f, Data sent(byte): %d\nData rate: %f (Kbytes/s)\n", ti, (int)len, rt);
 
@@ -78,11 +81,11 @@ int main(int argc, char *argv[])
 	exit(0);
 }
 
-float str_cli(FILE *fp, int sockfd, long *len)
+float str_cli(FILE *fp, int sockfd, long *len, int data_len)
 {
 	char *buf;
 	long lsize, ci;
-	char sends[DATALEN];
+	char sends[data_len];
 	struct ack_so ack;
 	int seq_num = 0;
 	int n, slen;
@@ -94,7 +97,7 @@ float str_cli(FILE *fp, int sockfd, long *len)
 	lsize = ftell(fp);
 	rewind(fp);
 	printf("The file length is %d bytes\n", (int)lsize);
-	printf("the packet length is %d bytes\n", DATALEN);
+	printf("the packet length is %d bytes\n", data_len);
 
 	// allocate memory to contain the whole file.
 	buf = (char *)malloc(lsize);
@@ -109,10 +112,10 @@ float str_cli(FILE *fp, int sockfd, long *len)
 	gettimeofday(&sendt, NULL); //get the current time
 	while (ci <= lsize)
 	{
-		if ((lsize + 1 - ci) <= DATALEN)
+		if ((lsize + 1 - ci) <= data_len)
 			slen = lsize + 1 - ci;
 		else
-			slen = DATALEN;
+			slen = data_len;
 		memcpy(sends, (buf + ci), slen);
 		n = send(sockfd, &sends, slen, 0);
 		if (n == -1)

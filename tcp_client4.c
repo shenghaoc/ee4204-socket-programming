@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
 	close(sockfd);
 	fclose(fp);
-	
+
 	exit(0);
 }
 
@@ -84,6 +84,7 @@ float str_cli(FILE *fp, int sockfd, long *len)
 	long lsize, ci;
 	char sends[DATALEN];
 	struct ack_so ack;
+	int seq_num = 0;
 	int n, slen;
 	float time_inv = 0.0;
 	struct timeval sendt, recvt;
@@ -119,15 +120,24 @@ float str_cli(FILE *fp, int sockfd, long *len)
 			printf("send error!"); //send the data
 			exit(1);
 		}
-		ci += slen;
+
+		if ((n = recv(sockfd, &ack, 2, 0)) == -1) //receive the ack
+		{
+			printf("error when receiving\n");
+			exit(1);
+		}
+
+		if (ack.num != seq_num + 1 || ack.len != 0)
+		{
+			printf("error in transmission\n");
+		}
+		else
+		{
+			seq_num++;
+			ci += slen;
+		}
 	}
-	if ((n = recv(sockfd, &ack, 2, 0)) == -1) //receive the ack
-	{
-		printf("error when receiving\n");
-		exit(1);
-	}
-	if (ack.num != 1 || ack.len != 0)
-		printf("error in transmission\n");
+
 	gettimeofday(&recvt, NULL);
 	*len = ci;				//get current time
 	tv_sub(&recvt, &sendt); // get the whole trans time

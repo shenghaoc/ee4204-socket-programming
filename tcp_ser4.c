@@ -1,5 +1,5 @@
 /**********************************
-tcp_ser.c: the source file of the server in tcp transmission 
+tcp_ser.c: the source file of the server in tcp transmission
 ***********************************/
 
 #include "headsock.h"
@@ -14,7 +14,6 @@ int main(int argc, char *argv[])
 	struct sockaddr_in my_addr;
 	struct sockaddr_in their_addr;
 	int sin_size;
-	struct timeval seedt;
 	double error_p;
 
 	pid_t pid;
@@ -50,9 +49,6 @@ int main(int argc, char *argv[])
 		printf("error in listening");
 		exit(1);
 	}
-
-    gettimeofday(&seedt, NULL);
-    srand(seedt.tv_usec * seedt.tv_sec);
 
 	while (1)
 	{
@@ -91,40 +87,49 @@ void str_ser(int sockfd, double error_p)
 	long lseek = 0;
 	end = 0;
 	int has_err = 0;
+	struct timeval seedt;
+
+	gettimeofday(&seedt, NULL);
+	srand(seedt.tv_usec * seedt.tv_sec);
 
 	printf("receiving data!\n");
 
 	while (!end)
 	{
-		if (error_p > (double) rand() / RAND_MAX)
-		{
-			has_err = 1;
-		}
-		else
-		{
-			has_err = 0;
-		}
-		
+        has_err = error_p > (double) rand() / RAND_MAX * 100;
+
 		if ((n = recv(sockfd, &recvs, DATALEN, 0)) == -1) //receive the packet
 		{
 			printf("error when receiving\n");
 			exit(1);
 		}
-		if (recvs[n - 1] == '\0') //if it is the end of the file
+		else
 		{
-			end = 1;
-			n--;
+
+			if (!has_err)
+			{
+				seq_num++;
+				if (recvs[n - 1] == '\0') //if it is the end of the file
+				{
+					end = 1;
+					n--;
+				}
+				memcpy((buf + lseek), recvs, n);
+				lseek += n;
+			} else {
+				ack.num = 0;
+			}
+
+			ack.num = seq_num;
+			ack.len = 0;
+			if ((n = send(sockfd, &ack, 2, 0)) == -1)
+			{
+				printf("send error!"); //send the ack
+				exit(1);
+			}
 		}
-		memcpy((buf + lseek), recvs, n);
-		lseek += n;
 	}
-	ack.num = 1;
-	ack.len = 0;
-	if ((n = send(sockfd, &ack, 2, 0)) == -1)
-	{
-		printf("send error!"); //send the ack
-		exit(1);
-	}
+
 	if ((fp = fopen("myTCPreceive.txt", "wt")) == NULL)
 	{
 		printf("File doesn't exist\n");

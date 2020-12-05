@@ -17,3 +17,5 @@ The file `myfile.txt`, which is meant to be transmitted and therefore required, 
 For throughput, without taking average values the trend is not obvious. However, the system calls used for socket programming cannot be called many times in a short span of time without errors. Therefore, the average values would have to be either calculated within the programs or manually.
 
 NOTE: I mixed up SEQ and ACK
+
+NOTE: The bash scripts for data collection do not work on macOS. macOS uses an outdated version of Bash because of licensing issues. However, removing `wait -n` and changing `kill -P $$` to `pkill tcp_ser4` should solve this issue.
